@@ -6,3 +6,5 @@ plotly
 streamlit
 influxdb-client
 python-dotenv
+fastapi[uvicorn]
+uvicorn
