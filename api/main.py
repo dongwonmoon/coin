@@ -22,6 +22,7 @@ MODEL_FILE = BASE_DIR / "models" / "model_BTC_USDT.json"
 loaded_models = {}
 
 # 서버 시작 시 모델 로드
+# 추후 lifespan + app.state로 이관
 if os.path.exists(MODEL_FILE):
     with open(MODEL_FILE, "r") as fin:
         loaded_models["BTC/USDT"] = model_from_json(fin.read())
@@ -74,3 +75,36 @@ async def predict_price(symbol: str):
         "execution_time": round(time.time() - start_time, 4),
         "forecast": next_24h.to_dict(orient="records"),
     }
+
+
+@app.get("/history/{symbol: path}")
+async def get_history(symbol: str):
+    """
+    InfluxDB에 저장된 과거 데이터 조회 (프론트엔드 차트용)
+    """
+    client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
+    query_api = client.query_api()
+
+    # 최근 30일치 데이터 조회 (추후 range 조정)
+    # pivot을 써서 _time, open, high, low, close, volume 형태로 정렬
+    query = f"""
+    from(bucket: "{INFLUXDB_BUCKET}")
+      |> range(start: -30d)
+      |> filter(fn: (r) => r["_measurement"] == "ohlcv")
+      |> filter(fn: (r) => r["symbol"] == "{symbol}")
+      |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+    """
+
+    result = query_api.query_data_frame(query)
+    client.close()
+
+    if result.empty:
+        raise HTTPException(status_code=404, detail="No history data found")
+
+    # DataFrame -> Dict 변환
+    df = result.rename(columns={"_time": "timestamp"})
+    # 필요한 컬럼만 선택
+    columns = ["timestamp", "open", "high", "low", "close", "volume"]
+    existing_cols = [c for c in columns if c in df.columns]
+
+    return {"symbol": symbol, "data": df[existing_cols].to_dict(orient="records")}
