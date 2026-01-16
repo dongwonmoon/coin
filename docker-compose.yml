@@ -39,10 +39,7 @@ services:
       dockerfile: docker/Dockerfile.streamlit
     container_name: coin-streamlit
     environment:
-      INFLUXDB_URL: ${INFLUXDB_URL}
-      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
-      INFLUXDB_ORG: ${INFLUXDB_ORG}
-      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+      API_URL: ${API_URL}
     ports:
       - "8501:8501"
     restart: always
