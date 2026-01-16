@@ -77,7 +77,7 @@ async def predict_price(symbol: str):
     }
 
 
-@app.get("/history/{symbol: path}")
+@app.get("/history/{symbol:path}")
 async def get_history(symbol: str):
     """
     InfluxDB에 저장된 과거 데이터 조회 (프론트엔드 차트용)
