@@ -69,7 +69,9 @@ def fetch_and_save(write_api, symbol, since_ts):
         df = pd.DataFrame(
             ohlcv, columns=["timestamp", "open", "high", "low", "close", "volume"]
         )
-        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms").dt.tz_localize(
+            "UTC"
+        )
         df.set_index("timestamp", inplace=True)
 
         # 태그 추가
