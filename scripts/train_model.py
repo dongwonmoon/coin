@@ -38,4 +38,5 @@ def train_and_save(symbol="BTC/USDT"):
 
 
 if __name__ == "__main__":
-    train_and_save("BTC/USDT")
+    for symbol in ["BTC/USDT", "ETH/USDT", "XRP/USDT", "SOL/USDT", "DOGE/USDT"]:
+        train_and_save(symbol)
