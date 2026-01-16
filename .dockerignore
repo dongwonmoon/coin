@@ -10,3 +10,5 @@ venv/
 node_modules/
 *.log
 docker-compose.yml
+influxdb_config
+influxdb_data
