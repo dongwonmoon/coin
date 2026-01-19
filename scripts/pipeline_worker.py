@@ -111,10 +111,12 @@ def run_prediction_and_save(write_api, symbol):
 
         # 예측 (현재 시점부터 24시간)
         future = model.make_future_dataframe(periods=24, freq="H")
+        print(future)
 
         # As-Is: 여기서는 과거 데이터 없이 모델이 기억하는 패턴으로만 예측
         # To-Do: Training Worker 구축
         forecast = model.predict(future)
+        print(forecast)
 
         # 필요한 데이터만 추출
         now = datetime.now(timezone.utc)
