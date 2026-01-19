@@ -14,7 +14,7 @@ COPY docker/requirements_worker.txt app/requirements_worker.txt
 RUN pip install --no-cache-dir -r app/requirements_worker.txt
 
 # 애플리케이션 코드 복사
-COPY scripts/ /app
+COPY scripts/ /app/scripts
 
 # 실행 명령
-CMD ["python", "-u", "pipeline_worker.py"]
+CMD ["python", "-u", "scripts/pipeline_worker.py"]
