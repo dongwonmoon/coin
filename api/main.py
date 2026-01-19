@@ -62,10 +62,12 @@ loaded_models = {}
 #             except Exception as e:
 #                 print(f"Failed to load {filename}: {e}")
 
+# 전역 클라이언트
+client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
+
 
 # InfluxDB 쿼리 헬퍼 함수
 def query_influx(symbol: str, measurement: str, days: int = 30):
-    client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
     query_api = client.query_api()
 
     # 최근 N일 데이터 조회 + Pivot으로 테이블 형태 변환
@@ -84,8 +86,8 @@ def query_influx(symbol: str, measurement: str, days: int = 30):
     except Exception as e:
         print(f"DB Query Error: {e}")
         return None
-    finally:
-        client.close()
+    # finally:
+    #     client.close()
 
     if isinstance(df, list) or df.empty:
         return None
@@ -151,3 +153,8 @@ async def predict_price(symbol: str):
 @app.get("/")
 def health_check():
     return {"status": "ok", "models_loaded": list(loaded_models.keys())}
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    client.close()
