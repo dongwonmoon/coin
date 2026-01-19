@@ -1,16 +1,32 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from influxdb_client import InfluxDBClient
+from contextlib import asynccontextmanager
 import pandas as pd
-from prophet.serialize import model_from_json
 import os
 import time
-from datetime import datetime, timezone
-from dotenv import load_dotenv
 
 # load_dotenv()
 
-app = FastAPI(title="Coin Predict API", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global client
+    print("Connecting to InfluxDB...")
+    client = InfluxDBClient(
+        url=INFLUXDB_URL,
+        token=INFLUXDB_TOKEN,
+        org=INFLUXDB_ORG,
+        timeout=10000,  # 타임아웃 설정
+        retries=3,  # 연결 끊김 대비 재시도
+    )
+    yield
+
+    print("Closing InfluxDB connection...")
+    client.close()
+
+
+app = FastAPI(title="Coin Predict API", version="1.0.0", lifespan=lifespan)
 
 # CORS 설정
 app.add_middleware(
@@ -61,9 +77,6 @@ loaded_models = {}
 #                 print(f"Model loaded: {symbol}")
 #             except Exception as e:
 #                 print(f"Failed to load {filename}: {e}")
-
-# 전역 클라이언트
-client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
 
 
 # InfluxDB 쿼리 헬퍼 함수
