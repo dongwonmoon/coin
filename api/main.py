@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 import pandas as pd
 import os
 import time
+from datetime import datetime
 
 # load_dotenv()
 
@@ -151,6 +152,9 @@ async def predict_price(symbol: str):
         raise HTTPException(
             status_code=404, detail="Prediction not ready. Check Pipeline Worker."
         )
+
+    now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    df = df[df["timestamp"] > now]
 
     cols = ["timestamp", "yhat", "yhat_lower", "yhat_upper"]
     available_cols = [c for c in cols if c in df.columns]
