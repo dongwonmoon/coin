@@ -115,7 +115,7 @@ def query_influx(symbol: str, measurement: str, days: int = 30):
 
 
 @app.get("/history/{symbol:path}")
-async def get_history(symbol: str):
+def get_history(symbol: str):
     """
     과거 30일치 차트 데이터 반환
     """
@@ -138,7 +138,7 @@ async def get_history(symbol: str):
 
 
 @app.get("/predict/{symbol:path}")
-async def predict_price(symbol: str):
+def predict_price(symbol: str):
     """
     'prediction' 테이블에서 미리 계산된 데이터를 가져옴
     """
