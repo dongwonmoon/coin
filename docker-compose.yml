@@ -32,6 +32,8 @@ services:
     ports:
       - "8000:8000"
     restart: always
+    volumes:
+      - ./static_data:/app/static_data
 
   streamlit:
     build:
@@ -59,4 +61,6 @@ services:
     restart: always
     volumes:
       - ./models:/app/models
+      - ./static_data:/app/static_data
 
+volumes:
