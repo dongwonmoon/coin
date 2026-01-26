@@ -161,7 +161,9 @@ def run_prediction_and_save(write_api, symbol):
 
         # 저장 (SSG)
         export_data = next_24h[["ds", "yhat", "yhat_lower", "yhat_upper"]]
-        export_data["ds"] = export_data["ds"].dt.tz_localize(None)
+        export_data["ds"] = pd.to_datetime(export_data["ds"]).dt.strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
 
         export_data.rename(
             columns={
