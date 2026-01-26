@@ -62,5 +62,3 @@ services:
     volumes:
       - ./models:/app/models
       - ./static_data:/app/static_data
-
-volumes:
