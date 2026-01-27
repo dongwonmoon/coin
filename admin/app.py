@@ -8,45 +8,50 @@ import time
 
 st.set_page_config(page_title="Coin Predict MVP", layout="wide")
 
-API_BASE_URL = os.getenv("API_URL", "http://localhost:8000")
+BASE_URL = os.getenv("API_URL", "http://nginx")
 
 
-@st.cache_data(ttl=60)  # 1분 동안 캐싱
+@st.cache_data(ttl=60)
 def get_history_data(symbol):
-    """API 서버에서 과거 데이터 조회"""
+    """Nginx에서 과거 데이터 정적 파일(SSG) 조회"""
     try:
-        url = f"{API_BASE_URL}/history/{symbol}"
-        response = requests.get(url)
+        # 파일명 규칙 적용 (BTC/USDT -> BTC_USDT)
+        safe_symbol = symbol.replace("/", "_")
+        url = f"{BASE_URL}/static/history_{safe_symbol}.json"
+
+        response = requests.get(url, timeout=5)
         response.raise_for_status()
 
         data = response.json()
-        df = pd.DataFrame(data["data"])
+        df = pd.DataFrame(data["data"])  # SSG 구조에 맞게 수정
 
-        # 날짜 변환 (UTC 문자열 -> datetime)
+        # 날짜 변환 (ISO 8601 -> datetime)
         df["timestamp"] = pd.to_datetime(df["timestamp"])
-        return df
+        return df, data.get("updated_at")  # 생성 시점 반환
     except Exception as e:
-        st.error(f"Failed to fetch history: {e}")
-        return pd.DataFrame()
+        st.error(f"Failed to fetch history file: {e}")
+        return pd.DataFrame(), None
 
 
 @st.cache_data(ttl=60)
 def get_forecast_data(symbol):
-    """API 서버에서 예측 데이터 조회"""
+    """Nginx에서 예측 데이터 정적 파일(SSG) 조회"""
     try:
-        url = f"{API_BASE_URL}/predict/{symbol}"
-        response = requests.get(url)
+        safe_symbol = symbol.replace("/", "_")
+        url = f"{BASE_URL}/static/prediction_{safe_symbol}.json"
+
+        response = requests.get(url, timeout=5)
         response.raise_for_status()
 
         data = response.json()
-        df = pd.DataFrame(data["forecast"])
+        df = pd.DataFrame(data["forecast"])  # SSG 구조에 맞게 수정
 
         # 날짜 변환
         df["timestamp"] = pd.to_datetime(df["timestamp"])
-        return df, data["execution_time"]
+        return df, data.get("updated_at")
     except Exception as e:
-        st.error(f"Failed to fetch forecast: {e}")
-        return pd.DataFrame(), 0.0
+        st.error(f"Failed to fetch prediction file: {e}")
+        return pd.DataFrame(), None
 
 
 # 차트 그리기 함수
